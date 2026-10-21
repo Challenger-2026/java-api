@@ -20,11 +20,11 @@ public class ModeracaoController {
         this.moderacaoService = moderacaoService;
     }
 
-    // GET /moderacoes/fila - postagens pendentes, sem o autor (correção as cegas)
+    // GET /moderacoes/fila?idUsuario=5 - fila às cegas do moderador logado
     @GetMapping("/fila")
     @ResponseStatus(HttpStatus.OK)
-    public List<DTOPostagemFilaResponse> listarFila() {
-        return moderacaoService.listarFila();
+    public List<DTOPostagemFilaResponse> listarFila(@RequestParam int idUsuario) {
+        return moderacaoService.listarFila(idUsuario);
     }
 
     // GET /moderacoes

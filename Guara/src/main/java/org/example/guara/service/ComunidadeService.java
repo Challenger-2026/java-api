@@ -51,6 +51,18 @@ public class ComunidadeService {
         return paraResponse(buscarComunidadeOuErro(id));
     }
 
+    // READ - comunidades de que o usuário participa (filtro "Minhas comunidades")
+    public List<DTOComunidadeResponse> listarPorMembro(int idUsuario) {
+        if (usuarioRepository.buscarPorId(idUsuario).isEmpty()) {
+            throw new RecursoNaoEncontrado("Usuário não encontrado");
+        }
+        List<DTOComunidadeResponse> resposta = new ArrayList<>();
+        for (Comunidade c : comunidadeRepository.buscarPorMembro(idUsuario)) {
+            resposta.add(paraResponse(c));
+        }
+        return resposta;
+    }
+
     // CREATE
     public DTOComunidadeResponse cadastrar(DTOComunidadeRequest dto) {
         Criador criador = buscarCriadorOuErro(dto.getIdUsuario()); // só CRIADOR pode criar

@@ -33,6 +33,13 @@ public class ComunidadeController {
         return comunidadeService.buscarPorId(id);
     }
 
+    // GET /comunidades/usuario/{idUsuario} - comunidades de que o usuário participa
+    @GetMapping("/usuario/{idUsuario}")
+    @ResponseStatus(HttpStatus.OK)
+    public List<DTOComunidadeResponse> listarPorMembro(@PathVariable int idUsuario) {
+        return comunidadeService.listarPorMembro(idUsuario);
+    }
+
     // POST /comunidades
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED) // 201

@@ -13,6 +13,7 @@ import org.example.guara.repository.ModeracaoRepository;
 import org.example.guara.repository.ModeradorRepository;
 import org.example.guara.repository.PostagemRepository;
 import org.example.guara.repository.UsuarioRepository;
+import org.example.guara.repository.UsuarioComunidadeRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -29,22 +30,32 @@ public class ModeracaoService {
     private final ModeradorRepository moderadorRepository;
     private final PostagemRepository postagemRepository;
     private final UsuarioRepository usuarioRepository;
+    private final UsuarioComunidadeRepository usuarioComunidadeRepository;
 
     public ModeracaoService(ModeracaoRepository moderacaoRepository,
                             ModeradorRepository moderadorRepository,
                             PostagemRepository postagemRepository,
-                            UsuarioRepository usuarioRepository) {
+                            UsuarioRepository usuarioRepository,
+                            UsuarioComunidadeRepository usuarioComunidadeRepository) {
         this.moderacaoRepository = moderacaoRepository;
         this.moderadorRepository = moderadorRepository;
         this.postagemRepository = postagemRepository;
         this.usuarioRepository = usuarioRepository;
+        this.usuarioComunidadeRepository = usuarioComunidadeRepository;
     }
 
     // FILA - postagens pendentes, às cegas (sem dados do autor)
-    public List<DTOPostagemFilaResponse> listarFila() {
+    // modelo ENEM: o moderador não vê as próprias postagens nem as das comunidades de que participa
+    public List<DTOPostagemFilaResponse> listarFila(int idUsuario) {
+        buscarModeradorOuErro(idUsuario); // só moderador vê a fila
+
         List<DTOPostagemFilaResponse> fila = new ArrayList<>();
         for (Postagem p : postagemRepository.buscarPorStatus("PENDENTE")) {
-            fila.add(new DTOPostagemFilaResponse(p.getId(), p.getCtTexto(), p.getCtUrl(), p.getPtGerado()));
+            boolean propria = p.getIdUsuario() == idUsuario;
+            boolean daComunidadeDele = usuarioComunidadeRepository.ehMembro(idUsuario, p.getIdComunidade());
+            if (!propria && !daComunidadeDele) {
+                fila.add(new DTOPostagemFilaResponse(p.getId(), p.getCtTexto(), p.getCtUrl(), p.getPtGerado()));
+            }
         }
         return fila;
     }
@@ -80,6 +91,10 @@ public class ModeracaoService {
         // moderador não avalia a própria postagem
         if (postagem.getIdUsuario() == dto.getIdUsuario()) {
             throw new RegraNegocioException("O moderador não pode avaliar a própria postagem");
+        }
+        // modelo ENEM: não modera comunidade de que participa
+        if (usuarioComunidadeRepository.ehMembro(dto.getIdUsuario(), postagem.getIdComunidade())) {
+            throw new RegraNegocioException("O moderador não pode avaliar postagens de comunidades de que participa");
         }
 
         Moderacao m = new Moderacao();

@@ -72,6 +72,32 @@ public class ComunidadeRepository {
         return Optional.empty();
     }
 
+    // READ - comunidades das quais o usuário é membro
+    public List<Comunidade> buscarPorMembro(int idUsuario) {
+        String sql = """
+                SELECT c.* FROM T_LGT_COMUNIDADE c
+                JOIN T_LGT_USUARIO_COMUNIDADE uc
+                  ON uc.T_LGT_COMUNIDADE_id_comunidade = c.id_comunidade
+                WHERE uc.T_LGT_USUARIO_id_usuario = ?
+                ORDER BY c.id_comunidade
+                """;
+        List<Comunidade> lista = new ArrayList<>();
+        try (
+                Connection con = dataSource.getConnection();
+                PreparedStatement ps = con.prepareStatement(sql)
+        ) {
+            ps.setInt(1, idUsuario);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    lista.add(montarComunidade(rs));
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return lista;
+    }
+
     // CREATE
     public Comunidade inserir(Comunidade comunidade) {
         String sql = """
