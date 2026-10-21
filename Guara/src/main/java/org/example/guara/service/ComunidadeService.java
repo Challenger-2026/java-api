@@ -75,7 +75,9 @@ public class ComunidadeService {
         c.setIdRanking(null);            // nasce sem ranking
 
         comunidadeRepository.inserir(c); // aqui o id é gerado
+        usuarioComunidadeRepository.inserir(dto.getIdUsuario(), c.getId()); // criador entra como membro
         return paraResponse(c);
+
     }
 
     // UPDATE
@@ -96,10 +98,13 @@ public class ComunidadeService {
         Comunidade c = buscarComunidadeOuErro(id);
         validarDono(c, idUsuario);
 
+        usuarioComunidadeRepository.deletar(idUsuario, id); // tira o criador dos membros antes de excluir
+
         try {
             comunidadeRepository.deletar(id);
         } catch (RuntimeException e) {
             if (violouFk(e)) {
+                usuarioComunidadeRepository.inserir(idUsuario, id); // devolve o criador como membro
                 throw new RegraNegocioException("Comunidade possui membros ou postagens e não pode ser excluída");
             }
             throw e;
@@ -122,7 +127,13 @@ public class ComunidadeService {
 
     // SAIR da comunidade
     public void sair(int idComunidade, int idUsuario) {
-        buscarComunidadeOuErro(idComunidade);
+        Comunidade c = buscarComunidadeOuErro(idComunidade);
+
+        // o criador não sai da própria comunidade (só excluindo ela)
+        Optional<Criador> criador = criadorRepository.buscarPorIdUsuario(idUsuario);
+        if (criador.isPresent() && criador.get().getId() == c.getIdCriador()) {
+            throw new RegraNegocioException("O criador não pode sair da própria comunidade");
+        }
 
         if (!usuarioComunidadeRepository.ehMembro(idUsuario, idComunidade)) {
             throw new RegraNegocioException("O usuário não é membro desta comunidade");
