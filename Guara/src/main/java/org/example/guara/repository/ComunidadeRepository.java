@@ -89,6 +89,8 @@ public class ComunidadeRepository {
                 SELECT c.*, cr.T_LGT_USUARIO_id_usuario AS id_usuario_criador
                 FROM T_LGT_COMUNIDADE c
                 JOIN T_LGT_CRIADOR cr ON cr.id_criador = c.T_LGT_CRIADOR_id_criador
+                JOIN T_LGT_USUARIO_COMUNIDADE uc
+                  ON uc.T_LGT_COMUNIDADE_id_comunidade = c.id_comunidade
                 WHERE uc.T_LGT_USUARIO_id_usuario = ?
                 ORDER BY c.id_comunidade
                 """;
