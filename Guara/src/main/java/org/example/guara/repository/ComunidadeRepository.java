@@ -32,12 +32,18 @@ public class ComunidadeRepository {
         c.setDtCriacao(rs.getDate("dt_criacao").toLocalDate());
         c.setIdCriador(rs.getInt("T_LGT_CRIADOR_id_criador"));
         c.setIdRanking(rs.getObject("T_LGT_RANKING_id_ranking", Integer.class)); // null se não tiver ranking
+        c.setIdUsuarioCriador(rs.getInt("id_usuario_criador")); // vem do JOIN com a T_LGT_CRIADOR
         return c;
     }
 
     // READ - todas
     public List<Comunidade> buscarTodas() {
-        String sql = "SELECT * FROM T_LGT_COMUNIDADE ORDER BY id_comunidade";
+        String sql = """
+                SELECT c.*, cr.T_LGT_USUARIO_id_usuario AS id_usuario_criador
+                FROM T_LGT_COMUNIDADE c
+                JOIN T_LGT_CRIADOR cr ON cr.id_criador = c.T_LGT_CRIADOR_id_criador
+                ORDER BY c.id_comunidade
+                """;
         List<Comunidade> lista = new ArrayList<>();
         try (
                 Connection con = dataSource.getConnection();
@@ -55,7 +61,12 @@ public class ComunidadeRepository {
 
     // READ - por id
     public Optional<Comunidade> buscarPorId(int id) {
-        String sql = "SELECT * FROM T_LGT_COMUNIDADE WHERE id_comunidade = ?";
+        String sql = """
+                SELECT c.*, cr.T_LGT_USUARIO_id_usuario AS id_usuario_criador
+                FROM T_LGT_COMUNIDADE c
+                JOIN T_LGT_CRIADOR cr ON cr.id_criador = c.T_LGT_CRIADOR_id_criador
+                WHERE c.id_comunidade = ?
+                """;
         try (
                 Connection con = dataSource.getConnection();
                 PreparedStatement ps = con.prepareStatement(sql)
@@ -75,9 +86,9 @@ public class ComunidadeRepository {
     // READ - comunidades das quais o usuário é membro
     public List<Comunidade> buscarPorMembro(int idUsuario) {
         String sql = """
-                SELECT c.* FROM T_LGT_COMUNIDADE c
-                JOIN T_LGT_USUARIO_COMUNIDADE uc
-                  ON uc.T_LGT_COMUNIDADE_id_comunidade = c.id_comunidade
+                SELECT c.*, cr.T_LGT_USUARIO_id_usuario AS id_usuario_criador
+                FROM T_LGT_COMUNIDADE c
+                JOIN T_LGT_CRIADOR cr ON cr.id_criador = c.T_LGT_CRIADOR_id_criador
                 WHERE uc.T_LGT_USUARIO_id_usuario = ?
                 ORDER BY c.id_comunidade
                 """;

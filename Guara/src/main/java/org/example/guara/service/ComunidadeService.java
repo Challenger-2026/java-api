@@ -73,6 +73,7 @@ public class ComunidadeService {
         c.setDtCriacao(LocalDate.now()); // data definida pelo sistema
         c.setIdCriador(criador.getId());
         c.setIdRanking(null);            // nasce sem ranking
+        c.setIdUsuarioCriador(dto.getIdUsuario()); // dono da comunidade (para o front)
 
         comunidadeRepository.inserir(c); // aqui o id é gerado
         usuarioComunidadeRepository.inserir(dto.getIdUsuario(), c.getId()); // criador entra como membro
@@ -188,7 +189,8 @@ public class ComunidadeService {
                 c.getDescricao(),
                 c.getDtCriacao(),
                 c.getIdCriador(),
-                c.getIdRanking()
+                c.getIdRanking(),
+                c.getIdUsuarioCriador()
         );
     }
 }

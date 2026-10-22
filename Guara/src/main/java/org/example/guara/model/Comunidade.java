@@ -17,4 +17,5 @@ public class Comunidade {
     private LocalDate dtCriacao;  // dt_criacao
     private int idCriador;        // FK T_LGT_CRIADOR_id_criador
     private Integer idRanking;    // FK T_LGT_RANKING_id_ranking (opcional, pode ser null)
+    private int idUsuarioCriador; // não é coluna: vem do JOIN com a T_LGT_CRIADOR
 }

@@ -19,4 +19,5 @@ public class DTOComunidadeResponse {
     private LocalDate dtCriacao;
     private int idCriador;
     private Integer idRanking; // pode vir null enquanto a comunidade não tiver ranking (criação inicial de uma comunidade)
+    private int idUsuarioCriador; // id do usuário dono (o idCriador é o id da T_LGT_CRIADOR)
 }
